@@ -80,8 +80,7 @@ require("lazy").setup({
 			{ "williamboman/mason.nvim", config = true },
 			"williamboman/mason-lspconfig.nvim",
 
-			{ "j-hui/fidget.nvim",       tage = "legacy", opts = {} },
-
+			{ "j-hui/fidget.nvim",       tag = "legacy", opts = {} },
 			"folke/neodev.nvim",
 		},
 	},
@@ -199,10 +198,8 @@ require("lazy").setup({
 
 	{
 		"lukas-reineke/indent-blankline.nvim",
-		opts = {
-			char = "┊",
-			show_trailing_blankline_indent = false,
-		},
+		main = "ibl",
+		opts = {},
 	},
 
 	{ "numToStr/Comment.nvim", opts = {} },
