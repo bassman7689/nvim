@@ -227,6 +227,10 @@ require("lazy").setup({
 		},
 		build = ":TSUpdate",
 	},
+
+	{
+		"github/copilot.vim",
+	},
 }, {})
 
 vim.o.hlsearch = false
