@@ -418,6 +418,7 @@ local servers = {
 	-- pyright = {},
 	-- rust_analyzer = {},
 	tsserver = {},
+	rust_analyzer = {},
 	html = { filetypes = { "html", "twig", "hbs" } },
 	lua_ls = {
 		Lua = {
