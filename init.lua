@@ -1,5 +1,8 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+vim.g.belloff = "all"
+vim.g.t_vb = ""
+vim.g.visualbell = ""
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -90,7 +93,6 @@ require("lazy").setup({
 			"rcarriga/nvim-dap-ui",
 			"williamboman/mason.nvim",
 			"jay-babu/mason-nvim-dap.nvim",
-			"leoluz/nvim-dap-go",
 		},
 		config = function()
 			local dap = require "dap"
@@ -132,8 +134,6 @@ require("lazy").setup({
 			dap.listeners.after.event_initialized["dapui_config"] = dapui.open
 			dap.listeners.before.event_terminated["dapui_config"] = dapui.close
 			dap.listeners.before.event_exited["dapui_config"] = dapui.close
-
-			require("dap-go").setup()
 		end,
 	},
 	{
@@ -142,6 +142,8 @@ require("lazy").setup({
 			"L3MON4D3/LuaSnip",
 			"saadparwaiz1/cmp_luasnip",
 			"hrsh7th/cmp-nvim-lsp",
+			"hrsh7th/cmp-buffer",
+			"hrsh7th/cmp-path",
 			"rafamadriz/friendly-snippets",
 		},
 	},
@@ -167,7 +169,7 @@ require("lazy").setup({
 					if vim.wo.diff then return "]c" end
 					vim.schedule(function() gs.next_hunk() end)
 					return "<Ignore>"
-				end, { expr = true, buffer = nfnr, desc = "Jump to next hunk" })
+				end, { expr = true, buffer = bufnr, desc = "Jump to next hunk" })
 				vim.keymap.set({ "n", "v" }, "[c", function()
 					if vim.wo.diff then return "[c" end
 					vim.schedule(function() gs.prev_hunk() end)
@@ -229,7 +231,48 @@ require("lazy").setup({
 	},
 
 	{
-		"github/copilot.vim",
+		"zbirenbaum/copilot-cmp",
+		config = function()
+			require("copilot_cmp").setup()
+		end,
+		dependencies = {
+			{
+				"zbirenbaum/copilot.lua",
+				config = function()
+					require("copilot").setup({
+						suggestion = { enabled = false },
+						panel = { enabled = false },
+					})
+				end,
+			},
+		},
+	},
+
+	{
+		"junegunn/vim-easy-align",
+	},
+
+	{
+		"ray-x/go.nvim",
+		dependencies = {
+			"ray-x/guihua.lua",
+			"neovim/nvim-lspconfig",
+			"nvim-treesitter/nvim-treesitter",
+		},
+		config = function()
+			require("go").setup()
+		end,
+		event = { "CmdlineEnter" },
+		ft = { "go", "gomod" },
+		build = ':lua require("go.install").update_all_sync()',
+	},
+
+	{
+		"towolf/vim-helm"
+	},
+
+	{
+		"mrcjkb/haskell-tools.nvim"
 	},
 }, {})
 
@@ -246,7 +289,7 @@ vim.o.smartcase = true
 vim.wo.signcolumn = "yes"
 vim.o.updatetime = 250
 vim.o.timeoutlen = 300
-vim.o.completeopt = "menuone,noselect"
+vim.o.completeopt = "menu,menuone,noselect"
 vim.o.termguicolors = true
 vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
@@ -296,7 +339,7 @@ require("nvim-treesitter.configs").setup {
 		"vim" },
 
 	-- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-	auto_install = false,
+	auto_install = true,
 
 	highlight = { enable = true },
 	indent = { enable = true },
@@ -413,16 +456,27 @@ end
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property "filetypes" to the map in question.
 local servers = {
-	-- clangd = {},
-	gopls = {},
+	clangd = { filetypes = { "c", "cpp", "objc", "objcpp", "cuda" } },
+	clojure_lsp = {},
 	-- pyright = {},
-	-- rust_analyzer = {},
-	tsserver = {},
+	nimls = {},
 	rust_analyzer = {},
-	html = { filetypes = { "html", "twig", "hbs" } },
+	tsserver = {},
+	sqlls = { root_dir = function() return vim.loop.cwd() end },
+	html = { filetypes = { "html", "twig", "hbs", "gohtmltmpl" } },
+	jdtls = {},
 	lua_ls = {
 		Lua = {
-			workspace = { checkThirdParty = false },
+			runtime = {
+				version = 'LuaJIT',
+			},
+			diagnostics = {
+				globals = {
+					'vim',
+					'require',
+				},
+			},
+			workspace = { checkThirdParty = false, library = vim.api.nvim_get_runtime_file("", true), },
 			telemetry = { enable = false },
 		},
 	},
@@ -496,7 +550,10 @@ cmp.setup {
 		end, { "i", "s" }),
 	},
 	sources = {
+		{ name = "copilot", },
 		{ name = "nvim_lsp" },
 		{ name = "luasnip" },
+		{ name = "buffer" },
+		{ name = "path" },
 	},
 }
